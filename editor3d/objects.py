@@ -6,7 +6,6 @@ class Object3D:
         self.name = name
         self.position = position
         self.rotation = rotation
-        self.scale = scale
         self.color = color
         self.parent = None
 
