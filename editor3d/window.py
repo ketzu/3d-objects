@@ -1,3 +1,5 @@
+import enum
+
 from PySide2.Qt3DInput import Qt3DInput
 from PySide2.Qt3DRender import Qt3DRender
 from PySide2.Qt3DCore import Qt3DCore
@@ -18,6 +20,97 @@ def _recursive_tree_add(node):
     return widget_item
 
 
+class PropertyType(enum.Enum):
+    POSITION = 1
+    ROTATION = 2
+    BOX_DIMENSIONS = 3
+    RADIUS = 4
+    SCALE = 5
+    NAME = 6
+    COLOR = 7
+
+
+class PropertyEditor:
+    def update_color(self, color):
+        self.manager.update_color(self.obj, color)
+
+    def update_name(self, name):
+        self.manager.update_name(self.obj, name)
+
+    def update_scalar(self, scalar):
+        if isinstance(self.obj, Sphere3D):
+            self.manager.update_radius(self.obj, scalar)
+        elif isinstance(self.obj, STL3D):
+            self.manager.update_scale(self.obj, scalar)
+
+    def update_trio(self, _):
+        vector = (self.x_edit.value(), self.y_edit.value(), self.z_edit.value())
+        if self.type == PropertyType.POSITION:
+            self.manager.update_position(self.obj, vector)
+        elif self.type == PropertyType.ROTATION:
+            self.manager.update_rotation(self.obj, vector)
+        elif self.type == PropertyType.BOX_DIMENSIONS:
+            self.manager.update_box_dimension(self.obj, vector)
+
+    def __init__(self, parent, type, title, manager, obj):
+        self.manager = manager
+        self.group = QGroupBox(title, parent)
+        self.type = type
+        self.obj = obj
+        hboxlayout = QHBoxLayout()
+        if type in [PropertyType.POSITION, PropertyType.ROTATION, PropertyType.BOX_DIMENSIONS]:
+            if type is PropertyType.POSITION:
+                x, y, z = obj.position
+            elif type is PropertyType.ROTATION:
+                x, y, z = obj.rotation
+            elif type is PropertyType.BOX_DIMENSIONS:
+                x, y, z = (obj.width, obj.length, obj.height)
+            else:
+                x, y, z = (0, 0, 0)
+            self.x_edit = QDoubleSpinBox()
+            self.x_edit.setValue(x)
+            self.x_edit.setRange(-9999, 9999)
+            self.x_edit.valueChanged.connect(self.update_trio)
+
+            self.y_edit = QDoubleSpinBox()
+            self.y_edit.setValue(y)
+            self.y_edit.setRange(-9999, 9999)
+            self.y_edit.valueChanged.connect(self.update_trio)
+
+            self.z_edit = QDoubleSpinBox()
+            self.z_edit.setValue(z)
+            self.z_edit.setRange(-9999, 9999)
+            self.z_edit.valueChanged.connect(self.update_trio)
+
+            hboxlayout.addWidget(self.x_edit)
+            hboxlayout.addWidget(self.y_edit)
+            hboxlayout.addWidget(self.z_edit)
+        elif type == PropertyType.NAME:
+            str_edit = QLineEdit(self.group)
+            str_edit.setText(obj.name)
+            str_edit.textChanged.connect(self.update_name)
+            hboxlayout.addWidget(str_edit)
+        elif type in [PropertyType.RADIUS, PropertyType.SCALE]:
+            single_edit = QDoubleSpinBox()
+            single_edit.setRange(-9999, 9999)
+            if type is PropertyType.RADIUS:
+                single_edit.setValue(obj.radius)
+            elif type is PropertyType.SCALE:
+                single_edit.setValue(obj.scale)
+            single_edit.valueChanged.connect(self.update_scalar)
+            hboxlayout.addWidget(single_edit)
+        elif type == PropertyType.COLOR:
+            color_label = QLabel()
+            color_palette = color_label.palette()
+            color_palette.setColor(color_label.backgroundRole(), QColor(obj.color))
+            color_label.setAutoFillBackground(True)
+            color_label.setPalette(color_palette)
+            hboxlayout.addWidget(color_label)
+            # todo: make it changeable
+        self.group.setLayout(hboxlayout)
+
+
+
 class QtFrontend:
     def __setup_lit_camera(self, camera):
         camera.lens().setPerspectiveProjection(45.0, 16.0 / 9.0, 0.1, 1000.0)
@@ -33,6 +126,35 @@ class QtFrontend:
         light_transform = Qt3DCore.QTransform(light_entity)
         light_transform.setTranslation(camera.position())
         light_entity.addComponent(light_transform)
+
+    def update_object_editor(self, obj):
+        vboxlayout = self.edit_group.layout()
+
+        while vboxlayout.takeAt(0) is not None:
+            pass
+        self.editors.clear()
+
+        self.editors[PropertyType.NAME] = PropertyEditor(self.edit_group, PropertyType.NAME, "Name", self.manager, obj)
+        vboxlayout.addWidget(self.editors[PropertyType.NAME].group)
+
+        self.editors[PropertyType.POSITION] = PropertyEditor(self.edit_group, PropertyType.POSITION, "Position", self.manager, obj)
+        vboxlayout.addWidget(self.editors[PropertyType.POSITION].group)
+
+        self.editors[PropertyType.ROTATION] = PropertyEditor(self.edit_group, PropertyType.ROTATION, "Rotation", self.manager, obj)
+        vboxlayout.addWidget(self.editors[PropertyType.ROTATION].group)
+
+        self.editors[PropertyType.COLOR] = PropertyEditor(self.edit_group, PropertyType.COLOR, "Color", self.manager, obj)
+        vboxlayout.addWidget(self.editors[PropertyType.COLOR].group)
+
+        if isinstance(obj, Sphere3D):
+            self.editors[PropertyType.RADIUS] = PropertyEditor(self.edit_group, PropertyType.RADIUS, "Radius", self.manager, obj)
+            vboxlayout.addWidget(self.editors[PropertyType.RADIUS].group)
+        elif isinstance(obj, Box3D):
+            self.editors[PropertyType.BOX_DIMENSIONS] = PropertyEditor(self.edit_group, PropertyType.BOX_DIMENSIONS, "Dimensions", self.manager, obj)
+            vboxlayout.addWidget(self.editors[PropertyType.BOX_DIMENSIONS].group)
+        elif isinstance(obj, STL3D):
+            self.editors[PropertyType.SCALE] = PropertyEditor(self.edit_group, PropertyType.SCALE, "Scale", self.manager, obj)
+            vboxlayout.addWidget(self.editors[PropertyType.SCALE].group)
 
     def __setup_basic_layout(self):
         self.window3d = Qt3DExtras.Qt3DWindow()
@@ -58,50 +180,9 @@ class QtFrontend:
         vlayout.addWidget(stl_button)
 
         self.edit_group = QGroupBox("Edit Object", self.widget)
-        vlayout.addWidget(self.edit_group)
-
         vboxlayout = QVBoxLayout()
-        name_label = QLabel("Name:")
-        name_edit = QLineEdit(name_label)
-        vboxlayout.addWidget(name_label)
-        vboxlayout.addWidget(name_edit)
-
-        self.pos_group = QGroupBox("Position", self.edit_group)
-        hboxlayout = QHBoxLayout()
-        pos_x_edit = QDoubleSpinBox()
-        pos_y_edit = QDoubleSpinBox()
-        pos_z_edit = QDoubleSpinBox()
-        hboxlayout.addWidget(pos_x_edit)
-        hboxlayout.addWidget(pos_y_edit)
-        hboxlayout.addWidget(pos_z_edit)
-        vboxlayout.addWidget(self.pos_group)
-        self.pos_group.setLayout(hboxlayout)
-
-        self.angles_group = QGroupBox("Angles", self.edit_group)
-        hboxlayout = QHBoxLayout()
-        angles_x_edit = QDoubleSpinBox()
-        angles_y_edit = QDoubleSpinBox()
-        angles_z_edit = QDoubleSpinBox()
-        hboxlayout.addWidget(angles_x_edit)
-        hboxlayout.addWidget(angles_y_edit)
-        hboxlayout.addWidget(angles_z_edit)
-        vboxlayout.addWidget(self.angles_group)
-        self.angles_group.setLayout(hboxlayout)
-
-        color_label_text = QLabel("Color:")
-        color_label = QLabel()
-        color_palette = color_label.palette()
-        color_palette.setColor(color_label.backgroundRole(), QColor("#00aa00"))
-        color_label.setAutoFillBackground(True)
-        color_label.setPalette(color_palette)
-        vboxlayout.addWidget(color_label_text)
-        vboxlayout.addWidget(color_label)
-
-        self.specials_group = QGroupBox("Special Properties", self.edit_group)
-        vboxlayout.addWidget(self.specials_group)
-
-        vboxlayout.addStretch(.5)
         self.edit_group.setLayout(vboxlayout)
+        vlayout.addWidget(self.edit_group)
 
         self.tree_list = QTreeWidget()
         self.tree_list.setHeaderLabel("Known Objects")
@@ -109,7 +190,10 @@ class QtFrontend:
 
         self.widget.setWindowTitle("3D Editor")
 
-    def __init__(self, argv, object_root):
+    def __init__(self, argv, object_root, manager):
+        self.manager = manager
+        self.editors = {}
+
         self.app = QApplication(argv)
         self.__setup_basic_layout()
 
@@ -123,6 +207,7 @@ class QtFrontend:
         self.camera_controller = Qt3DExtras.QOrbitCameraController(object_root)
         self.camera_controller.setCamera(self.window3d.camera())
 
+        # Base node for tree of elements
         self.window3d.setRootEntity(object_root)
 
         self.widget.resize(1000, 700)
@@ -139,5 +224,5 @@ class QtFrontend:
         for element in root.children:
             self.tree_list.addTopLevelItem(_recursive_tree_add(element))
 
-    def set_slected_object(self, object):
-        pass
+    def set_slected_object(self, obj):
+        self.update_object_editor(obj)
