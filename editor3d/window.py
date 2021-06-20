@@ -4,12 +4,21 @@ from PySide2.Qt3DCore import Qt3DCore
 from PySide2.Qt3DExtras import Qt3DExtras
 from PySide2.QtCore import QSize, Qt
 from PySide2.QtGui import QColor, QVector3D
-from PySide2.QtWidgets import QApplication, QWidget, QHBoxLayout, QVBoxLayout, QPushButton, QTreeWidget
+from PySide2.QtWidgets import QApplication, QWidget, QHBoxLayout, QVBoxLayout, QPushButton, QTreeWidget, \
+    QTreeWidgetItem, QGroupBox, QLabel, QLineEdit, QDoubleSpinBox
 
 from editor3d.objects import Sphere3D, Box3D, STL3D
 
 
-class MainWindow:
+def _recursive_tree_add(node):
+    widget_item = QTreeWidgetItem([node.name])
+    widget_item.original = node
+    for child in node.children:
+        widget_item.addChild(_recursive_tree_add(child))
+    return widget_item
+
+
+class QtFrontend:
     def __setup_lit_camera(self, camera):
         camera.lens().setPerspectiveProjection(45.0, 16.0 / 9.0, 0.1, 1000.0)
         camera.setPosition(QVector3D(0, 0, 20))
@@ -48,36 +57,73 @@ class MainWindow:
         vlayout.addWidget(sphere_button)
         vlayout.addWidget(stl_button)
 
+        self.edit_group = QGroupBox("Edit Object", self.widget)
+        vlayout.addWidget(self.edit_group)
+
+        vboxlayout = QVBoxLayout()
+        name_label = QLabel("Name:")
+        name_edit = QLineEdit(name_label)
+        vboxlayout.addWidget(name_label)
+        vboxlayout.addWidget(name_edit)
+
+        self.pos_group = QGroupBox("Position", self.edit_group)
+        hboxlayout = QHBoxLayout()
+        pos_x_edit = QDoubleSpinBox()
+        pos_y_edit = QDoubleSpinBox()
+        pos_z_edit = QDoubleSpinBox()
+        hboxlayout.addWidget(pos_x_edit)
+        hboxlayout.addWidget(pos_y_edit)
+        hboxlayout.addWidget(pos_z_edit)
+        vboxlayout.addWidget(self.pos_group)
+        self.pos_group.setLayout(hboxlayout)
+
+        self.angles_group = QGroupBox("Angles", self.edit_group)
+        hboxlayout = QHBoxLayout()
+        angles_x_edit = QDoubleSpinBox()
+        angles_y_edit = QDoubleSpinBox()
+        angles_z_edit = QDoubleSpinBox()
+        hboxlayout.addWidget(angles_x_edit)
+        hboxlayout.addWidget(angles_y_edit)
+        hboxlayout.addWidget(angles_z_edit)
+        vboxlayout.addWidget(self.angles_group)
+        self.angles_group.setLayout(hboxlayout)
+
+        color_label_text = QLabel("Color:")
+        color_label = QLabel()
+        color_palette = color_label.palette()
+        color_palette.setColor(color_label.backgroundRole(), QColor("#00aa00"))
+        color_label.setAutoFillBackground(True)
+        color_label.setPalette(color_palette)
+        vboxlayout.addWidget(color_label_text)
+        vboxlayout.addWidget(color_label)
+
+        self.specials_group = QGroupBox("Special Properties", self.edit_group)
+        vboxlayout.addWidget(self.specials_group)
+
+        vboxlayout.addStretch(.5)
+        self.edit_group.setLayout(vboxlayout)
+
         self.tree_list = QTreeWidget()
         self.tree_list.setHeaderLabel("Known Objects")
         vlayout.addWidget(self.tree_list)
 
         self.widget.setWindowTitle("3D Editor")
 
-    def __init__(self, objects, argv):
-        self.objects = objects
-        self.connections = {}
-
+    def __init__(self, argv, object_root):
         self.app = QApplication(argv)
         self.__setup_basic_layout()
 
         self.input_aspect = Qt3DInput.QInputAspect()
         self.window3d.registerAspect(self.input_aspect)
 
-        # Scene root object to start the rendering tree
-        self.object_root = Qt3DCore.QEntity()
-
         # Setup basic camera with light bound to the camera
-        self.__setup_lit_camera(self.window3d.camera(), self.object_root)
+        self.__setup_lit_camera(self.window3d.camera())
 
         # Setup camera controller to allow panning, moving, etc.
-        self.camera_controller = Qt3DExtras.QOrbitCameraController(self.object_root)
+        self.camera_controller = Qt3DExtras.QOrbitCameraController(object_root)
         self.camera_controller.setCamera(self.window3d.camera())
 
-        for obj in objects:
-            self.resolve_object(obj)
-
-        self.window3d.setRootEntity(self.object_root)
+        self.window3d.setRootEntity(object_root)
 
         self.widget.resize(1000, 700)
 
@@ -87,53 +133,11 @@ class MainWindow:
     def exec(self):
         return self.app.exec_()
 
-    def resolve_object(self, obj):
-        if obj.parent is not None:
-            self.resolve_object(obj.parent)
-        if self.connections[obj] is None:
-            self.add_object(obj)
+    def set_known_objects(self, root):
+        self.tree_list.clear()
+        self.tree_list.setHeaderLabel("Known Objects")
+        for element in root.children:
+            self.tree_list.addTopLevelItem(_recursive_tree_add(element))
 
-    def add_sphere(self, sphere):
-        mesh = Qt3DExtras.QSphereMesh(rings=20, slices=20, radius=sphere.radius)
-
-        transform = Qt3DCore.QTransform(scale=1.0, translation=QVector3D(sphere.position))
-
-        material = Qt3DExtras.QPhongMaterial(diffuse=QColor(sphere.color))
-
-        entity = Qt3DCore.QEntity(self.object_root if sphere.parent is None else self.connections[sphere.parent][0])
-        entity.addComponent(mesh)
-        entity.addComponent(material)
-        entity.addComponent(transform)
-
-        self.connections[sphere] = [entity, mesh, transform, material]
-        self.connections[entity] = sphere
-
-    def add_box(self, box):
-        mesh = Qt3DExtras.QCuboidMesh()
-        mesh.setXExtent(box.length)
-        mesh.setZExtent(box.height)
-        mesh.setYExtent(box.width)
-
-        transform = Qt3DCore.QTransform(scale=1.0, translation=QVector3D(box.position))
-
-        material = Qt3DExtras.QPhongMaterial(diffuse=QColor(box.color))
-
-        entity = Qt3DCore.QEntity(self.object_root if box.parent is None else self.connections[box.parent][0])
-        entity.addComponent(mesh)
-        entity.addComponent(material)
-        entity.addComponent(transform)
-
-        self.connections[box] = [entity, mesh, transform, material]
-        self.connections[entity] = box
-
-    def add_stl_object(self, stlobj):
+    def set_slected_object(self, object):
         pass
-
-    def add_object(self, obj):
-        if isinstance(obj, Sphere3D):
-            self.add_sphere(obj)
-        elif isinstance(obj, Box3D):
-            self.add_box(obj)
-        elif isinstance(obj, STL3D):
-            self.add_stl_object(obj)
-
