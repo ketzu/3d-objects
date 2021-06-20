@@ -60,6 +60,13 @@ class Box3D(Object3D):
         self.width = width
         self.height = height
 
+    def set_dimension(self, dimensions):
+        undo = Operation(self.set_dimension, (self.width, self.length, self.height), dimensions)
+        self.width = dimensions[0]
+        self.length = dimensions[1]
+        self.height = dimensions[2]
+        return undo
+
     def set_width(self, width):
         undo = Operation(self.set_width, self.width, width)
         self.width = width
