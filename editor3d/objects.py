@@ -8,10 +8,17 @@ class Object3D:
         self.rotation = rotation
         self.color = color
         self.parent = None
+        self.children = set()
 
     def set_parent(self, parent):
         undo = Operation(self.set_parent, self.parent, parent)
+        # remove from old parent
+        if self.parent is not None:
+            self.parent.children.remove(self)
         self.parent = parent
+        # add to new parent
+        if self.parent is not None:
+            self.parent.children.add(self)
         return undo
 
     def set_color(self, color):
@@ -36,7 +43,7 @@ class Object3D:
 
 
 class Sphere3D(Object3D):
-    def __init__(self, name="Box", position=(0, 0, 0), rotation=(0, 0, 0), color="#dddddd", radius=1):
+    def __init__(self, name="Sphere", position=(0, 0, 0), rotation=(0, 0, 0), color="#dddddd", radius=1):
         super().__init__(name, position, rotation, color)
         self.radius = radius
 
@@ -73,6 +80,7 @@ class STL3D(Object3D):
     def __init__(self, path, name="Box", position=(0, 0, 0), rotation=(0, 0, 0), color="#dddddd", scale=1.0):
         super().__init__(name, position, rotation, scale, color)
         self.path = path
+        self.scale = scale
 
     def set_scale(self, scale):
         undo = Operation(self.set_scale, self.scale, scale)
