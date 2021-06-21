@@ -14,10 +14,11 @@ Pyside2 with Python 3.
 
  * [✓] 3D Scene rendering
  * [✓] Camera movement, including rotation
- * [ ] Create and edit primitive shapes:
+ * [✓] Create and edit primitive shapes:
     * [✓] Spheres with variable radius
     * [✓] Boxes with 3 independent variable side lenghts
-    * [ ] Position, rotation, color and name
+    * [✓] Position, rotation, color and name
+ * [ ] Delete Shapes 
  * [✓] List all objects in scene
    * [✓] Select objects via list
  * [ ] Persistent data storage with auto-save

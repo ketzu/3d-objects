@@ -122,7 +122,7 @@ class Manager:
 
         x, y, z = box.position
         transform = Qt3DCore.QTransform(scale=1.0, translation=QVector3D(x, y, z))
-        material = Qt3DExtras.QPhongMaterial(diffuse=QColor(box.color))
+        material = Qt3DExtras.QDiffuseSpecularMaterial(diffuse=QColor(box.color))
         entity = self.create_entity(mesh, material, transform)
 
         self.objects[box] = [entity, mesh, transform, material]
@@ -139,7 +139,7 @@ class Manager:
 
         x, y, z = sphere.position
         transform = Qt3DCore.QTransform(scale=1.0, translation=QVector3D(x, y, z))
-        material = Qt3DExtras.QPhongMaterial(diffuse=QColor(sphere.color))
+        material = Qt3DExtras.QDiffuseSpecularMaterial(diffuse=QColor(sphere.color))
         entity = self.create_entity(mesh, material, transform)
 
         self.objects[sphere] = [entity, mesh, transform, material]

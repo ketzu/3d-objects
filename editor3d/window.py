@@ -7,7 +7,7 @@ from PySide2.Qt3DExtras import Qt3DExtras
 from PySide2.QtCore import QSize, Qt, QItemSelectionModel
 from PySide2.QtGui import QColor, QVector3D
 from PySide2.QtWidgets import QApplication, QWidget, QHBoxLayout, QVBoxLayout, QPushButton, QTreeWidget, \
-    QTreeWidgetItem, QGroupBox, QLabel, QLineEdit, QDoubleSpinBox, QAbstractItemView
+    QTreeWidgetItem, QGroupBox, QLabel, QLineEdit, QDoubleSpinBox, QAbstractItemView, QColorDialog
 
 from editor3d.objects import Sphere3D, Box3D, STL3D
 
@@ -103,13 +103,23 @@ class PropertyEditor:
             single_edit.valueChanged.connect(self.update_scalar)
             hboxlayout.addWidget(single_edit)
         elif type == PropertyType.COLOR:
-            color_label = QLabel()
-            color_palette = color_label.palette()
-            color_palette.setColor(color_label.backgroundRole(), QColor(obj.color))
-            color_label.setAutoFillBackground(True)
-            color_label.setPalette(color_palette)
-            hboxlayout.addWidget(color_label)
-            # todo: make it changeable
+            def pick_color(event):
+                color = QColorDialog.getColor(QColor(obj.color))
+                if color.isValid():
+                    self.color_label
+                    self.manager.update_color(obj, color.name())
+                    color_palette = self.color_label.palette()
+                    color_palette.setColor(self.color_label.backgroundRole(), QColor(obj.color))
+                    self.color_label.setPalette(color_palette)
+
+            self.color_label = QLabel()
+            color_palette = self.color_label.palette()
+            color_palette.setColor(self.color_label.backgroundRole(), QColor(obj.color))
+            self.color_label.setAutoFillBackground(True)
+            self.color_label.setPalette(color_palette)
+            hboxlayout.addWidget(self.color_label)
+
+            self.color_label.mousePressEvent = pick_color
         self.group.setLayout(hboxlayout)
 
 
