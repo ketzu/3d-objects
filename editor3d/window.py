@@ -177,8 +177,11 @@ class QtFrontend:
         hlayout.addLayout(vlayout)
 
         box_button = QPushButton("Add Box")
+        box_button.clicked.connect(self.manager.create_box)
         sphere_button = QPushButton("Add Sphere")
+        sphere_button.clicked.connect(self.manager.create_sphere)
         stl_button = QPushButton("Load from stl")
+        # todo: stl_button.clicked.connect(), file selector dialog and forward to manager
 
         vlayout.addWidget(box_button)
         vlayout.addWidget(sphere_button)

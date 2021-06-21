@@ -27,14 +27,6 @@ class Manager:
         self.entity_root = Qt3DCore.QEntity()
         self.qt_frontend = QtFrontend(sys.argv, self.entity_root, self)
 
-        box = self.create_box()
-        box.set_parent(self.object_root)
-        sphere = self.create_sphere()
-        sphere.set_parent(self.object_root)
-
-        self.qt_frontend.update_object_editor(sphere)
-        self.qt_frontend.update_object_editor(box)
-
         self.qt_frontend.set_known_objects(self.object_root)
 
     def start(self):
@@ -135,7 +127,10 @@ class Manager:
 
         self.objects[box] = [entity, mesh, transform, material]
         self.entities[entity] = box
-        return box
+
+        box.set_parent(self.object_root)
+
+        self.qt_frontend.set_known_objects(self.object_root)
 
     def create_sphere(self):
         sphere = Sphere3D()
@@ -149,4 +144,7 @@ class Manager:
 
         self.objects[sphere] = [entity, mesh, transform, material]
         self.entities[entity] = sphere
-        return sphere
+
+        sphere.set_parent(self.object_root)
+
+        self.qt_frontend.set_known_objects(self.object_root)
