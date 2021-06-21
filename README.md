@@ -1,4 +1,4 @@
-# 3d-objects
+# 3D-Objects viewer
 
 2 day Challenge.
 
@@ -25,13 +25,13 @@ Pyside2 with Python 3.
 
 ### Additional
 
- * [x] Clicking and dragging of shapes to change their position and orientation
- * [x] Click to select objects in Scene instead of list
+ * [ ] Clicking and dragging of shapes to change their position and orientation
+ * [ ] Click to select objects in Scene instead of list
  * [✓] Editing history of objects with undo and redo feature
-   * [x] Support for undo/redo of deletion/creation
+   * [ ] Support for undo/redo of deletion/creation
  * [ ] Arbitrary shapes via stl import
  * [ ] Nested Objects
- * [x] Dockerize
+ * [ ] Dockerize
 
 ## Result
 
