@@ -19,7 +19,7 @@ Pyside2 with Python 3.
     * [✓] Boxes with 3 independent variable side lenghts
     * [ ] Position, rotation, color and name
  * [✓] List all objects in scene
-   * [ ] Select objects via list
+   * [✓] Select objects via list
  * [ ] Persistent data storage with auto-save
 
 ### Additional
