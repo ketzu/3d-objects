@@ -2,7 +2,7 @@
 
 2 day Challenge.
 
-Timeframe: 8am day 1 until 6pm day 2.
+Timeframe: 8am day 1 until 4pm day 2.
 
 ## Techstack
 
@@ -21,7 +21,7 @@ Pyside2 with Python 3.
  * [✓] Delete Shapes 
  * [✓] List all objects in scene
    * [✓] Select objects via list
- * [ ] Persistent data storage with auto-save
+ * [✓] Persistent data storage with auto-save
 
 ### Additional
 
