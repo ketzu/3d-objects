@@ -110,7 +110,6 @@ class PropertyEditor:
         self.group.setLayout(hboxlayout)
 
 
-
 class QtFrontend:
     def __setup_lit_camera(self, camera):
         camera.lens().setPerspectiveProjection(45.0, 16.0 / 9.0, 0.1, 1000.0)
@@ -118,18 +117,21 @@ class QtFrontend:
         camera.setUpVector(QVector3D(0, 1, 0))
         camera.setViewCenter(QVector3D(0, 0, 0))
 
-        light_entity = Qt3DCore.QEntity(camera)
-        light = Qt3DRender.QPointLight(light_entity)
+        self.light_entity = Qt3DCore.QEntity(camera)
+        light = Qt3DRender.QPointLight(self.light_entity)
         light.setColor("white")
         light.setIntensity(1)
-        light_entity.addComponent(light)
-        light_transform = Qt3DCore.QTransform(light_entity)
+        self.light_entity.addComponent(light)
+        light_transform = Qt3DCore.QTransform(self.light_entity)
         light_transform.setTranslation(camera.position())
-        light_entity.addComponent(light_transform)
+        self.light_entity.addComponent(light_transform)
 
     def update_object_editor(self, obj):
         vboxlayout = self.edit_group.layout()
 
+        # Clean up previous objects and the main layout
+        for widget in self.editors.values():
+            widget.deleteLater()
         while vboxlayout.takeAt(0) is not None:
             pass
         self.editors.clear()
