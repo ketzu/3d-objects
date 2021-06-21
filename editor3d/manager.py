@@ -75,6 +75,25 @@ class Manager:
         self.undopipeline.add_operation(obj.set_name(name))
         self.qt_frontend.set_known_objects(self.object_root)
 
+    def update_object(self, obj):
+        mesh = self.objects[obj][1]
+        transform = self.objects[obj][2]
+        material = self.objects[obj][3]
+
+        material.setDiffuse(QColor(obj.color))
+        transform.setTranslation(QVector3D(obj.position[0], obj.position[1], obj.position[2]))
+        transform.setRotation(QQuaternion.fromEulerAngles(obj.rotation[0], obj.rotation[1], obj.rotation[2]))
+
+        if isinstance(obj, Sphere3D):
+            mesh.setRadius(obj.radius)
+        elif isinstance(obj, Box3D):
+            mesh.setXExtent(obj.width)
+            mesh.setYExtent(obj.length)
+            mesh.setZExtent(obj.height)
+
+        self.qt_frontend.set_known_objects(self.object_root)
+        self.qt_frontend.update_object_editor(obj)
+
     def add_box(self):
         pass
 
@@ -85,10 +104,14 @@ class Manager:
         pass
 
     def undo(self):
-        pass
+        target = self.undopipeline.undo()
+        if target is not None:
+            self.update_object(target)
 
     def redo(self):
-        pass
+        target = self.undopipeline.redo()
+        if target is not None:
+            self.update_object(target)
 
     def create_entity(self, mesh, material, transform):
         entity = Qt3DCore.QEntity(self.entity_root)

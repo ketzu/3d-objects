@@ -14,7 +14,7 @@ class TestOperation(unittest.TestCase):
     def test_simple(self):
         target = MockTarget(20)
         self.assertEqual(target.value, 20)
-        op = Operation(target.set, 15, 20)
+        op = Operation(target, target.set, 15, 20)
 
         op.undo()
         self.assertEqual(target.value, 15)
@@ -45,7 +45,7 @@ class TestPipeline(unittest.TestCase):
         self.assertEqual(len(pipeline.queue), 0)
         self.assertEqual(pipeline.position, -1)
 
-        pipeline.add_operation(Operation(target.set, 15, 20))
+        pipeline.add_operation(Operation(target, target.set, 15, 20))
         self.assertEqual(len(pipeline.queue), 1)
         self.assertEqual(pipeline.position, 0)
 
@@ -74,11 +74,11 @@ class TestPipeline(unittest.TestCase):
         self.assertEqual(len(pipeline.queue), 0)
         self.assertEqual(pipeline.position, -1)
 
-        pipeline.add_operation(Operation(target2.set, 50, 10))
-        pipeline.add_operation(Operation(target1.set, 40, 4))
-        pipeline.add_operation(Operation(target1.set, 4, 15))
-        pipeline.add_operation(Operation(target1.set, 15, 20))
-        pipeline.add_operation(Operation(target2.set, 10, 0))
+        pipeline.add_operation(Operation(target2, target2.set, 50, 10))
+        pipeline.add_operation(Operation(target1, target1.set, 40, 4))
+        pipeline.add_operation(Operation(target1, target1.set, 4, 15))
+        pipeline.add_operation(Operation(target1, target1.set, 15, 20))
+        pipeline.add_operation(Operation(target2, target2.set, 10, 0))
 
         self.assertEqual(len(pipeline.queue), 5)
         self.assertEqual(pipeline.position, 4)
@@ -99,7 +99,7 @@ class TestPipeline(unittest.TestCase):
         self.assertEqual(pipeline.position, 1)
 
         target2.set(0)
-        pipeline.add_operation(Operation(target2.set, 10, 0))
+        pipeline.add_operation(Operation(target2, target2.set, 10, 0))
         self.assertEqual(target2.value, 0)
         self.assertEqual(len(pipeline.queue), 3)
         self.assertEqual(pipeline.position, 2)

@@ -1,5 +1,6 @@
 class Operation:
-    def __init__(self, setter, from_value, to_value):
+    def __init__(self, target, setter, from_value, to_value):
+        self.target = target
         self.setter = setter
         self.from_value = from_value
         self.to_value = to_value
@@ -19,13 +20,19 @@ class Pipeline:
 
     def undo(self):
         if 0 <= self.position < len(self.queue):
-            self.queue[self.position].undo()
+            op = self.queue[self.position]
+            op.undo()
             self.position -= 1
+            return op.target
+        return None
 
     def redo(self):
         if self.position+1 < len(self.queue):
-            self.queue[self.position+1].redo()
+            op = self.queue[self.position+1]
+            op.redo()
             self.position += 1
+            return op.target
+        return None
 
     def add_operation(self, op):
         self.queue = self.queue[:self.position+1]

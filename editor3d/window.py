@@ -193,6 +193,13 @@ class QtFrontend:
         self.tree_list.itemClicked.connect(lambda item: self.set_slected_object(item.original))
         vlayout.addWidget(self.tree_list)
 
+        undo_button = QPushButton("Undo")
+        undo_button.clicked.connect(self.manager.undo)
+        redo_button = QPushButton("Redo")
+        redo_button.clicked.connect(self.manager.redo)
+        vlayout.addWidget(undo_button)
+        vlayout.addWidget(redo_button)
+
         self.widget.setWindowTitle("3D Editor")
 
     def __init__(self, argv, object_root, manager):

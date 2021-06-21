@@ -26,7 +26,7 @@ Pyside2 with Python 3.
 
  * [ ] Clicking and dragging of shapes to change their position and orientation
  * [ ] Click to select objects in Scene instead of list
- * [ ] Editing history of objects with undo and redo feature
+ * [✓] Editing history of objects with undo and redo feature
  * [ ] Arbitrary shapes via stl import
  * [ ] Nested Objects
  * [ ] Dockerize
