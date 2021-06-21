@@ -149,6 +149,9 @@ class QtFrontend:
             pass
         self.editors.clear()
 
+        if obj is None:
+            return
+
         self.editors[PropertyType.NAME] = PropertyEditor(self.edit_group, PropertyType.NAME, "Name", self.manager, obj)
         vboxlayout.addWidget(self.editors[PropertyType.NAME].group)
 
@@ -170,6 +173,10 @@ class QtFrontend:
         elif isinstance(obj, STL3D):
             self.editors[PropertyType.SCALE] = PropertyEditor(self.edit_group, PropertyType.SCALE, "Scale", self.manager, obj)
             vboxlayout.addWidget(self.editors[PropertyType.SCALE].group)
+
+        delete_button = QPushButton("Delete Object")
+        delete_button.clicked.connect(lambda: self.manager.delete_object(obj))
+        vboxlayout.addWidget(delete_button)
 
     def __setup_basic_layout(self):
         self.window3d = Qt3DExtras.Qt3DWindow()

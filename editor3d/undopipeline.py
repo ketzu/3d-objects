@@ -18,6 +18,11 @@ class Pipeline:
         # points to the last exectued operation
         self.position = -1
 
+    def clean(self, target):
+        queue = [_ for _ in self.queue if _.target is not target]
+        self.position -= len(self.queue) - len(queue)
+        self.queue = queue
+
     def undo(self):
         if 0 <= self.position < len(self.queue):
             op = self.queue[self.position]

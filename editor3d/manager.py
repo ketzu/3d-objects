@@ -95,6 +95,16 @@ class Manager:
     def add_stl_object(self, path):
         pass
 
+    def delete_object(self, obj):
+        obj.set_parent(None)
+        entity, mesh, transform, material = self.objects[obj]
+        del self.objects[obj]
+        del self.entities[entity]
+        entity.deleteLater()
+        self.undopipeline.clean(obj)
+        self.qt_frontend.update_object_editor(None)
+        self.qt_frontend.set_known_objects(self.object_root)
+
     def undo(self):
         target = self.undopipeline.undo()
         if target is not None:

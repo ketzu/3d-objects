@@ -18,7 +18,7 @@ Pyside2 with Python 3.
     * [✓] Spheres with variable radius
     * [✓] Boxes with 3 independent variable side lenghts
     * [✓] Position, rotation, color and name
- * [ ] Delete Shapes 
+ * [✓] Delete Shapes 
  * [✓] List all objects in scene
    * [✓] Select objects via list
  * [ ] Persistent data storage with auto-save
