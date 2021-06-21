@@ -10,6 +10,9 @@ class Object3D:
         self.parent = None
         self.children = set()
 
+    def __str__(self):
+        return self.name
+
     def set_parent(self, parent):
         undo = Operation(self.set_parent, self.parent, parent)
         # remove from old parent
