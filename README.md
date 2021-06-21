@@ -25,9 +25,10 @@ Pyside2 with Python 3.
 
 ### Additional
 
- * [ ] Clicking and dragging of shapes to change their position and orientation
- * [ ] Click to select objects in Scene instead of list
+ * [x] Clicking and dragging of shapes to change their position and orientation
+ * [x] Click to select objects in Scene instead of list
  * [✓] Editing history of objects with undo and redo feature
+   * [x] Support for undo/redo of deletion/creation
  * [ ] Arbitrary shapes via stl import
  * [ ] Nested Objects
- * [ ] Dockerize
+ * [x] Dockerize -> Dockerization for GUI processes is problematic, especially with a windows host
