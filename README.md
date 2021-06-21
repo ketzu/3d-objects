@@ -57,7 +57,7 @@ Objects have some core properties such as position and rotation and are organize
 The data is mirrored in Qt objects for presentation on the frontend, to allow for separation of Qt and the business logic.
 This could be changed by fully embracing Qt even for the data representation.
 
-![Data Structure](doc/3dobjets_data.png)
+![Data Structure](doc/3dobjects_data.png)
 
 Unfortunately, nested objects are not fully realized in creating them and presentation.
 
