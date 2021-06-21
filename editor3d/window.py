@@ -4,10 +4,10 @@ from PySide2.Qt3DInput import Qt3DInput
 from PySide2.Qt3DRender import Qt3DRender
 from PySide2.Qt3DCore import Qt3DCore
 from PySide2.Qt3DExtras import Qt3DExtras
-from PySide2.QtCore import QSize, Qt
+from PySide2.QtCore import QSize, Qt, QItemSelectionModel
 from PySide2.QtGui import QColor, QVector3D
 from PySide2.QtWidgets import QApplication, QWidget, QHBoxLayout, QVBoxLayout, QPushButton, QTreeWidget, \
-    QTreeWidgetItem, QGroupBox, QLabel, QLineEdit, QDoubleSpinBox
+    QTreeWidgetItem, QGroupBox, QLabel, QLineEdit, QDoubleSpinBox, QAbstractItemView
 
 from editor3d.objects import Sphere3D, Box3D, STL3D
 
@@ -51,6 +51,9 @@ class PropertyEditor:
             self.manager.update_rotation(self.obj, vector)
         elif self.type == PropertyType.BOX_DIMENSIONS:
             self.manager.update_box_dimension(self.obj, vector)
+
+    def deleteLater(self):
+        self.group.deleteLater()
 
     def __init__(self, parent, type, title, manager, obj):
         self.manager = manager
@@ -182,12 +185,12 @@ class QtFrontend:
         vlayout.addWidget(stl_button)
 
         self.edit_group = QGroupBox("Edit Object", self.widget)
-        vboxlayout = QVBoxLayout()
-        self.edit_group.setLayout(vboxlayout)
+        self.edit_group.setLayout(QVBoxLayout())
         vlayout.addWidget(self.edit_group)
 
         self.tree_list = QTreeWidget()
         self.tree_list.setHeaderLabel("Known Objects")
+        self.tree_list.itemClicked.connect(lambda item: self.set_slected_object(item.original))
         vlayout.addWidget(self.tree_list)
 
         self.widget.setWindowTitle("3D Editor")
